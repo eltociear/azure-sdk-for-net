@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Azure.Core;
-using Azure.Core.Pipeline;
-using Microsoft.Identity.Client;
 using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
+using Azure.Core.Pipeline;
+using Microsoft.Identity.Client;
 
 namespace Azure.Identity
 {
@@ -15,7 +15,7 @@ namespace Azure.Identity
     /// A <see cref="TokenCredential"/> implementation which launches the system default browser to interactively authenticate a user, and obtain an access token.
     /// The browser will only be launched to authenticate the user once, then will silently acquire access tokens through the users refresh token as long as it's valid.
     /// </summary>
-    public class InteractiveBrowserCredential : TokenCredential
+    public class InteractiveBrowserCredential : TokenCredential, ISupportsClearAccountCache
     {
         internal string TenantId { get; }
         internal string[] AdditionallyAllowedTenantIds { get; }
@@ -233,5 +233,31 @@ namespace Azure.Identity
             Record = new AuthenticationRecord(result, ClientId);
             return new AccessToken(result.AccessToken, result.ExpiresOn);
         }
+
+#pragma warning disable CA2119 // Seal methods that satisfy private interfaces
+        /// <inheritdoc/>
+        [ForwardsClientCalls(true)]
+        public virtual async Task ClearAccountCacheAsync(CancellationToken cancellationToken = default)
+        {
+            if (Record == null)
+            {
+                return;
+            }
+
+            await Client.RemoveUserAsync(new AuthenticationAccount(Record), cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        [ForwardsClientCalls(true)]
+        public virtual void ClearAccountCache(CancellationToken cancellationToken = default)
+        {
+            if (Record == null)
+            {
+                return;
+            }
+
+            Client.RemoveUser(new AuthenticationAccount(Record), cancellationToken);
+        }
+#pragma warning restore CA2119 // Seal methods that satisfy private interfaces
     }
 }

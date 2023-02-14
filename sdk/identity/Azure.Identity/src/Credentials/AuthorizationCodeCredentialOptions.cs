@@ -16,7 +16,7 @@ namespace Azure.Identity
     /// <summary>
     /// Options used to configure the <see cref="AuthorizationCodeCredential"/>.
     /// </summary>
-    public class AuthorizationCodeCredentialOptions : TokenCredentialOptions, ISupportsDisableInstanceDiscovery
+    public class AuthorizationCodeCredentialOptions : TokenCredentialOptions, ISupportsDisableInstanceDiscovery, ITokenCacheOptions
     {
         /// <summary>
         /// The redirect Uri that will be sent with the GetToken request.
@@ -30,5 +30,8 @@ namespace Azure.Identity
 
         /// <inheritdoc/>
         public bool DisableInstanceDiscovery { get; set; }
+
+        /// <inheritdoc/>
+        public TokenCachePersistenceOptions TokenCachePersistenceOptions { get; set; }
     }
 }
